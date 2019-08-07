@@ -74,7 +74,7 @@
  has subject => is => 'ro', isa => 'Str', required => 1;
  has body    => is => 'ro', isa => 'Str', required => 1;
 
- # The boring part of building and sending it
+ # The boring part of building and sending emails
  sub run($self) { ... }
 
  1;
@@ -85,6 +85,10 @@
   <section>
     <h1>Workers listen to queues</h1>
     <h2>with priorities</h2>
+    <br><br>
+    <pre><code>
+    &gt; resque-worker -q primary -q secondary -q less_important
+    </code></pre>
   </section>
 
   <section>
@@ -134,24 +138,6 @@
   </section>
 
   <section>
-    <h1>Around 50 Million</h1>
-    <h2>single tasks</h2>
-  </section>
-  <section>
-    <h1>Every single</h1>
-    <h1>DAY</h1>
-  </section>
-  <section>
-    <h1>315 workers</h1>
-  </section>
-  <section>
-    <h1>140 classes</h1>
-  </section>
-  <section>
-    <h1>258 queues</h1>
-  </section>
-
-  <section>
     <h1>DRY</h1>
     <h2>Composing is easy</h2>
   </section>
@@ -161,6 +147,24 @@
   <section>
     <h2>Never mix read with write</h2>
     <h3>(fork vs no-fork)</h3>
+  </section>
+
+  <section>
+    <h1>&gt; 50 M</h1>
+    <h2>single tasks</h2>
+  </section>
+  <section>
+    <h1>144 classes</h1>
+  </section>
+  <section>
+    <h1>360 workers</h1>
+  </section>
+  <section>
+    <h1>366 queues</h1>
+    <br><br>
+    <pre><code>
+    &gt; resque-queue --show | wc -l
+    </code></pre>
   </section>
 
   <section>
@@ -222,12 +226,26 @@
   </section>
 
   <section>
-    <h1>5m to 500m events on this kind of workflows</h1>
+    <h1>5k to 500k events on this kind of workflows</h1>
   </section>
   <section>
-    <h1>Different priorities</h1>
-    <h1>vs</h1>
+    <h1>It works great!</h1>
+  </section>
+
+  <section>
+    <h1>Crawling workflows started to evolve</h1>
+    <h2>(2y ago)</h2>
+  </section>
+
+  <section>
+    <h1>New targets</h1>
+    <h2>every day/week</h2>
+  </section>
+
+  <section>
     <h1>Different queues</h1>
+    <h1>+</h1>
+    <h1>Different priorities</h1>
   </section>
 
   <section>
@@ -235,10 +253,10 @@
   </section>
 
   <section>
-    <h1>At least X workers per site/queue</h1>
+    <h1>At least X workers per target/queue</h1>
   </section>
   <section>
-    <h1>No more than X parallel requests per site</h1>
+    <h1>No more than X parallel requests per target</h1>
   </section>
   <section>
     <h1>IPs get banned</h1>
@@ -261,11 +279,6 @@
   </section>
   <section>
     <h1>...until it didn't!</h1>
-  </section>
-
-  <section>
-    <h1>Crawling workflows are evolving</h1>
-    <h2>since 2y ago</h2>
   </section>
 
   <section>
@@ -296,7 +309,7 @@
     <h1>... and deploying</h1>
   </section>
   <section data-background="red">
-    <h1 style="color:white;">Do you feel the PAIN?</h1>
+    <h1 style="color:white;">PITA</h1>
   </section>
   <section data-background="#a0d5f7">
     <img src="img/too-busy.jpg" alt="" class="plain">
@@ -308,6 +321,32 @@
   <section>
     <h1>Remove ansible</h1>
     <h3>(for reconfiguring queues)</h3>
+  </section>
+
+  <section>
+    <h2>Workers hot reconfig</h2>
+  </section>
+
+  <section>
+    <img src="img/wf-static.png" alt="" class="plain">
+  </section>
+  <section>
+    <img src="img/wf-empty.png" alt="" class="plain">
+  </section>
+  <section>
+    <img src="img/wf-brain-1.png" alt="" class="plain">
+  </section>
+  <section>
+    <img src="img/wf-brain-2.png" alt="" class="plain">
+  </section>
+  <section>
+    <img src="img/wf-brain-3.png" alt="" class="plain">
+  </section>
+  <section>
+    <img src="img/wf-brain-3b.png" alt="" class="plain">
+  </section>
+  <section>
+    <img src="img/wf-brain-4.png" alt="" class="plain">
   </section>
 
   <section>
@@ -345,7 +384,7 @@
     $self->startup;
 
     while ( ! $self->shutdown ) {
-        $self->autoconfig->($self) if $self->has_autoconfig;
+        <mark>$self->autoconfig->($self) if $self->has_autoconfig;</mark>
         if ( !$self->paused && ( my $job = $self->reserve ) ) {
             $self->log("Got job $job");
             $self->work_tick($job);
@@ -360,6 +399,33 @@
 
     $self->unregister_worker;
  }
+
+  </code></pre>
+</section>
+
+<section>
+  <pre><code data-noescape>
+
+ &gt; ss-worker --help
+
+   ss-worker [-adfiMnquv] [long options...] &lt;some-arg&gt;
+        -q STR... --queue STR...          queue name
+        -i NUM --interval NUM             Polling interval in floating
+                                          seconds for this resque worker
+                                          (Default 5 seconds)
+        -f --cant-fork                    Don't let resque fork
+        -M STR... --module STR...         Modules to load before forking
+                                          occurs
+
+        -a --autoconfig                   Activate worker autoconfig
+        -n STR --worker-name STR          Worker name to be reported to the
+                                          config server (default to pid)
+        -u STR --autoconfig-url STR       Autoconfig URL to request
+                                          configuration (defaults to
+                                          http://config.ss/worker)
+        -d INT --autoconfig-interval INT  Autoconfig interval in seconds to
+                                          request configuration (defaults to
+                                          60)
 
   </code></pre>
 </section>
@@ -401,31 +467,6 @@
     </code></pre>
   </section>
 
-  <section>
-      <pre><code>
- > ss-worker --help
-
-   ss-worker [-adfiMnquv] [long options...] &lt;some-arg&gt;
-        -q STR... --queue STR...          queue name
-        -i NUM --interval NUM             Polling interval in floating
-                                          seconds for this resque worker
-                                          (Default 5 seconds)
-        -f --cant-fork                    Don't let resque fork
-        -M STR... --module STR...         Modules to load before forking
-                                          occurs
-
-        -a --autoconfig                   Activate worker autoconfig
-        -n STR --worker-name STR          Worker name to be reported to the
-                                          config server (default to pid)
-        -u STR --autoconfig-url STR       Autoconfig URL to request
-                                          configuration (defaults to
-                                          http://config.ss/worker)
-        -d INT --autoconfig-interval INT  Autoconfig interval in secconds to
-                                          request configuration (defaults to
-                                          60)
-
-      </code></pre>
-  </section>
 
   <section>
     <h1>Worker brain</h1>
@@ -491,8 +532,22 @@
   <section>
     <h1>Move all kind of workers</h1>
   </section>
+
   <section>
-    <h1>Update based on work-load</h1>
+    <h1>...</h1>
+  </section>
+  <section>
+    <h1>It works great!</h1>
+  </section>
+
+  <section data-background="yellow">
+  <h1>Thanks!</h1>
+  </section>
+  <section data-background="red">
+    <img src="img/bender-applause.png" alt="" class="plain">
+  </section>
+  <section>
+  <h1>Questions?</h1>
   </section>
 
   <section>
@@ -573,21 +628,6 @@
   </section>
 
   <section>
-    <h1>...</h1>
-  </section>
-
-
-  <section data-background="yellow">
-  <h1>Thanks!</h1>
-  </section>
-  <section data-background="red">
-    <img src="img/bender-applause.png" alt="" class="plain">
-  </section>
-  <section>
-  <h1>Questions?</h1>
-  </section>
-
-  <section>
     <pre><code data-noescape class="perl">
 
  package Supers::Task::Test::Passing;
@@ -615,6 +655,7 @@
  1;
 
     </code></pre>
+
   </section>
 
       </div>
